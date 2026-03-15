@@ -9,4 +9,3 @@ def get_all_custom_models():
             custom_models.append(model.__name__)
 
     return custom_models
-        
