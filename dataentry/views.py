@@ -1,11 +1,32 @@
-from django.shortcuts import render
-
+from django.shortcuts import render,redirect
 from .utils import get_all_custom_models
-
+from uploads.models import Upload
+from django.conf import settings
+from django.core.management import call_command
 # Create your views here.
 def import_data(request):
     if request.method == "POST":
-        return
+        file_path = request.FILES.get("file_path")
+        model_name = request.POST.get("model_name")
+        
+        # store the file in the upload model
+        upload = Upload.objects.create(file=file_path, model_name=model_name)
+
+        # construct the file path
+        relative_path = str(upload.file.url) # This is the relative path to the uploaded file
+        base_url = str(settings.BASE_DIR)  # This is the base directory of your project
+        
+        file_path = base_url + relative_path  # Construct the full file path
+        
+        # trigger the importdata command
+        try:
+            call_command("importdata", file_path, model_name)
+
+        except Exception as e:
+            raise e
+
+
+        return redirect("import_data")
     else:
         custom_models = get_all_custom_models()
         context = {
