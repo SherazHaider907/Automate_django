@@ -3,6 +3,8 @@ from .utils import get_all_custom_models
 from uploads.models import Upload
 from django.conf import settings
 from django.core.management import call_command
+from django.contrib import messages
+
 # Create your views here.
 def import_data(request):
     if request.method == "POST":
@@ -21,9 +23,10 @@ def import_data(request):
         # trigger the importdata command
         try:
             call_command("importdata", file_path, model_name)
+            messages.success(request,"Data imported successfully!")
 
         except Exception as e:
-            raise e
+            messages.error(request, str(e))
 
 
         return redirect("import_data")
