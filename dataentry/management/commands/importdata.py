@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand,CommandError
 # from dataentry.models import Student
 from django.apps import apps 
 import csv
+from django.db import DataError
 # Propsose command - python manage.py importdata
 
 class Command(BaseCommand):
@@ -27,10 +28,18 @@ class Command(BaseCommand):
                 
         if not model:
             raise CommandError(f'Model "{model_name}" not found in any installed app.') 
-            return
+        
+        # compaire csv headers with model fields
+        # get all the field names of the model
+        model_fields = [field.name for field in model._meta.fields if field.name != 'id'] # Exclude the 'id' field if it's an auto-incrementing primary key
 
         with open(file_path, 'r') as file:
             reader = csv.DictReader(file)
+            csv_headers = reader.fieldnames
+
+            # campare csv headers with model fields
+            if csv_headers != model_fields:
+                raise DataError(f' Model fields {model_fields}. not found')
             for row in reader:
                 model.objects.create(
                     **row # Unpacking the row dictionary to match the model fields
