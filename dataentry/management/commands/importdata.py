@@ -1,9 +1,9 @@
-from django.core.management.base import BaseCommand,CommandError
-# from dataentry.models import Student
+from django.core.management.base import BaseCommand, CommandError
 from django.apps import apps 
 import csv
 from django.db import DataError
-# Propsose command - python manage.py importdata
+
+# Purpose: command - python manage.py importdata
 
 class Command(BaseCommand):
     help = 'Import data from a file'
@@ -14,38 +14,38 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         file_path = kwargs['file_path']
-        model_name = kwargs['model_name'].capitalize() # Capitalize the model name to match the class name convention
+        model_name = kwargs['model_name'].capitalize()  # Capitalize to match class name convention
 
         # search for the model in all installed apps
         model = None
         for app_config in apps.get_app_configs():
-        # try to get the model from the app
             try:
-                model = apps.get_model(app_config.label,model_name)
-                break # if model is found, break the loop
+                model = apps.get_model(app_config.label, model_name)
+                break  # model found
             except LookupError:
-                continue # if model is not found, continue searching
-                
+                continue  # keep searching
+
         if not model:
             raise CommandError(f'Model "{model_name}" not found in any installed app.') 
-        
-        # compaire csv headers with model fields
-        # get all the field names of the model
-        model_fields = [field.name for field in model._meta.fields if field.name != 'id'] # Exclude the 'id' field if it's an auto-incrementing primary key
 
-        with open(file_path, 'r') as file:
+        # get all the field names of the model (excluding 'id')
+        model_fields = [field.name for field in model._meta.fields if field.name != 'id']
+
+        # open CSV file
+        with open(file_path, 'r', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
-            csv_headers = reader.fieldnames
+            csv_headers = [header.strip() for header in reader.fieldnames]
 
-            # campare csv headers with model fields
-            if csv_headers != model_fields:
-                raise DataError(f' Model fields {model_fields}. not found')
-            for row in reader:
-                model.objects.create(
-                    **row # Unpacking the row dictionary to match the model fields
-                    # name=row['name'],
-                    # age=row['age'],
-                    # grade=row['grade']
+            # check CSV headers against model fields (order doesn't matter)
+            if not all(field in csv_headers for field in model_fields):
+                raise DataError(
+                    f'Missing fields in CSV. Model fields: {model_fields}, CSV headers: {csv_headers}'
                 )
+
+            # create objects
+            for row in reader:
+                # only pick fields that exist in model to avoid extra CSV columns
+                data = {field: row[field] for field in model_fields}
+                model.objects.create(**data)
+
         self.stdout.write(self.style.SUCCESS('Data imported from CSV successfully!'))
-        
