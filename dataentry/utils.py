@@ -67,3 +67,23 @@ def send_email_notification(mail_subject,message,to_email):
         mail.send()
     except Exception as e:
         raise e
+    
+
+def get_model_and_fields(model_name):
+    """
+    Helper to get model and its fields (for export)
+    """
+    model = None
+    for app_config in apps.get_app_configs():
+        try:
+            model = apps.get_model(app_config.label, model_name)
+            break
+        except LookupError:
+            continue
+
+    if not model:
+        raise CommandError(f'Model "{model_name}" not found in any installed app.')
+
+    fields = [field.name for field in model._meta.fields]
+
+    return model, fields
