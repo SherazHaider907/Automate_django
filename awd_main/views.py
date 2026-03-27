@@ -4,6 +4,7 @@ from dataentry.tasks import celery_test_task
 from .forms import RegistrationForm
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import auth
 def home(request):
     # The template is stored under templates/dataentry/home.html
     return render(request, "home.html")
@@ -33,13 +34,23 @@ def register(request):
 
 def login(request):
     if request.method == 'POST':
-        return
+        form = AuthenticationForm(request, data=request.POST)
+        
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+
+            user = auth.authenticate(username=username, password=password)
+
+            if user is not None:
+                auth.login(request, user)
+                return redirect('home')
+        else:
+            messages.error(request, 'Invalid credentials')
     else:
         form = AuthenticationForm()
-        context = {
-            'form': form
-        }
-    return render(request,'login.html',context)
+
+    return render(request, 'login.html', {'form': form})
 
 def logout(request):
     return render(request,'logout.html')
