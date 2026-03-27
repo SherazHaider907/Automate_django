@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from dataentry.tasks import celery_test_task
 from .forms import RegistrationForm
 from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
 def home(request):
     # The template is stored under templates/dataentry/home.html
     return render(request, "home.html")
@@ -31,7 +32,14 @@ def register(request):
     return render(request,'register.html',context) 
 
 def login(request):
-    return render(request,'login.html')
+    if request.method == 'POST':
+        return
+    else:
+        form = AuthenticationForm()
+        context = {
+            'form': form
+        }
+    return render(request,'login.html',context)
 
 def logout(request):
     return render(request,'logout.html')
