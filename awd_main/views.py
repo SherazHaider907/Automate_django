@@ -53,4 +53,6 @@ def login(request):
     return render(request, 'login.html', {'form': form})
 
 def logout(request):
-    return render(request,'logout.html')
+
+    auth.logout(request)
+    return redirect('home')
