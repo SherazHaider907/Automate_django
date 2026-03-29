@@ -1,6 +1,8 @@
 from django.shortcuts import render,redirect
 from .forms import EmailForm
 from django.contrib import messages
+from dataentry.utils import send_email_notification
+from django.conf import settings
 # Create your views here.
 def send_email(request):
     if request.method == "POST":
@@ -8,7 +10,11 @@ def send_email(request):
         if email_form.is_valid():
             email_form.save()
             # send an Email
-
+            mail_subject = request.POST.get('subject')
+            message = request.POST.get('body')
+            to_email = settings.DEFAULT_TO_EMAIL
+            send_email_notification(mail_subject,message,to_email)
+            
             # display a success message
             messages.success(request,'Email sent Successfully!')
             return redirect('send_email')
