@@ -1,9 +1,17 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from .forms import EmailForm
+from django.contrib import messages
 # Create your views here.
 def send_email(request):
     if request.method == "POST":
-        return
+        email_form = EmailForm(request.POST,request.FILES)
+        if email_form.is_valid():
+            email_form.save()
+            # send an Email
+
+            # display a success message
+            messages.success(request,'Email sent Successfully!')
+            return redirect('send_email')
     else:
         email_form = EmailForm()
         context = {

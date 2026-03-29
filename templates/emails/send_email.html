@@ -13,7 +13,7 @@
                     
                     <h2 class="text-center mb-4">Compose An Email</h2>
                     
-                    <form action="{% url "send_email" %}" method="POST">
+                    <form action="{% url "send_email" %}" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         
                         <div class="mb-3">
@@ -27,7 +27,7 @@
                         </div>
 
                     </form>
-
+                    {% include "alerts.html" %}
                 </div>
 
             </div>
