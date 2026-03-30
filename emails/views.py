@@ -4,6 +4,8 @@ from django.contrib import messages
 from dataentry.utils import send_email_notification
 from django.conf import settings
 from .models import Subcriber
+from .tasks import send_email_task
+
 # Create your views here.
 def send_email(request):
     if request.method == "POST":
@@ -27,8 +29,11 @@ def send_email(request):
             if email_form.attachment:
                 attachment = email_form.attachment.path
             else:
-                attachment = None     
-            send_email_notification(mail_subject,message,to_email,attachment)
+                attachment = None
+
+            # Handover email sending task to celery
+            send_email_task.delay(mail_subject, message, to_email, attachment)
+            
             
             # display a success message
             messages.success(request,'Email sent Successfully!')
