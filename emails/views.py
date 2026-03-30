@@ -44,3 +44,10 @@ def send_email(request):
             'email_form' : email_form,
         }
     return render (request,'emails/send_email.html',context)
+
+
+def track_click():
+    return
+
+def track_open():
+    return
