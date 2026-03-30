@@ -61,7 +61,7 @@ def send_email_notification(mail_subject,message,to_email):
             mail_subject,
             message,
             from_email,
-            to=[to_email]   # must be a list
+            to=to_email  
         )
         
         mail.send()
