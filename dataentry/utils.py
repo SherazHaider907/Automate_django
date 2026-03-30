@@ -54,7 +54,7 @@ def check_csv_errors(file_path, model_name):
     return model, model_fields, csv_headers
 
 
-def send_email_notification(mail_subject,message,to_email):
+def send_email_notification(mail_subject,message,to_email ,attachment=None):
     try:
         from_email = settings.DEFAULT_FROM_EMAIL
         mail = EmailMessage(
@@ -64,6 +64,9 @@ def send_email_notification(mail_subject,message,to_email):
             to=to_email  
         )
         
+        if attachment:
+            mail.attach_file(attachment)
+            
         mail.send()
     except Exception as e:
         raise e

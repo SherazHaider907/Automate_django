@@ -24,8 +24,11 @@ def send_email(request):
 
             to_email = [email.email_address for email in subcribers]
         
-                
-            send_email_notification(mail_subject,message,to_email)
+            if email_form.attachment:
+                attachment = email_form.attachment.path
+            else:
+                attachment = None     
+            send_email_notification(mail_subject,message,to_email,attachment)
             
             # display a success message
             messages.success(request,'Email sent Successfully!')
