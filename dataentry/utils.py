@@ -3,8 +3,9 @@ from django.core.management import CommandError
 import csv
 from django.core.mail import EmailMessage
 from django.conf import settings
-from emails.models import Email,Sent
-
+from emails.models import Email,Sent,EmailTracking,Subcriber
+import hashlib
+import time
 def get_all_custom_models():
     """Return all custom models excluding default Django models."""
     default_models = ['LogEntry', 'Permission', 'Group', 'ContentType', 'Session', 'User', 'Upload']
@@ -58,19 +59,39 @@ def check_csv_errors(file_path, model_name):
 def send_email_notification(mail_subject,message,to_email ,attachment=None,email_id=None):
     try:
         from_email = settings.DEFAULT_FROM_EMAIL
-        mail = EmailMessage(mail_subject,message,from_email,to=to_email  )
+        for recipient_email in to_email:
+            # create emailTracking
+            if email_id:
+                email = Email.objects.get(pk=email_id)
+                subcriber = Subcriber.objects.get(email_list= email.email_list,email_address=recipient_email)
+                timestamp = str(time.time())
+                data_to_hash = f"{recipient_email}{timestamp}"
+                unique_id = hashlib.sha256(data_to_hash.encode()).hexdigest()
+                email_tracking = EmailTracking.objects.create(
+                    email = email,
+                    subcriber = subcriber,
+                    unique_id = unique_id
+                )
 
-        if attachment:
-            mail.attach_file(attachment)
-            
-        mail.content_subtype = 'html'
-        mail.send()
+            # Genrate the tracking pixel
 
-        email = Email.objects.get(pk=email_id)
-        sent = Sent()
-        sent.email = email
-        sent.total_sent = email.email_list.count_emails()
-        sent.save()
+            # search for the links in email body
+
+            # if there are links or url in the email body. injectect our click tracking url to that link
+
+            mail = EmailMessage(mail_subject,message,from_email,to=to_email  )
+
+            if attachment:
+                mail.attach_file(attachment)
+                
+            mail.content_subtype = 'html'
+            mail.send()
+
+        if email:
+            sent = Sent()
+            sent.email = email
+            sent.total_sent = email.email_list.count_emails()
+            sent.save()
     except Exception as e:
         raise e
     
