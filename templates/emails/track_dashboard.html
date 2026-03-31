@@ -25,10 +25,10 @@
       <td>{{ email.total_sent }}</td> 
       <td>
         <div>
-            0 % Opened
+            {{ email.open_rate }} % Opened
         </div>
         <div>
-            0 % Clicked
+            {{ email.click_rate }} % Clicked
         </div>
       </td> 
       <td>{{ email.send_at }}</td> 

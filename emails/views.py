@@ -3,11 +3,12 @@ from .forms import EmailForm
 from django.contrib import messages
 from dataentry.utils import send_email_notification
 from django.conf import settings
-from .models import Subcriber,Email
+from .models import Subcriber,Email,EmailTracking
 from .tasks import send_email_task
 from django.db.models import Sum
 from emails.models import Sent
-
+from django.utils import timezone
+from django.http import HttpResponse,HttpResponseRedirect
 # Create your views here.
 def send_email(request):
     if request.method == "POST":
@@ -49,11 +50,34 @@ def send_email(request):
     return render (request,'emails/send_email.html',context)
 
 
-def track_click():
-    return
+def track_click(request, unique_id):
+    try:
+        email_tracking = EmailTracking.objects.get(unique_id=unique_id)
+        url = request.GET.get('url')
+        # check if the clicked_at field is already set or not
+        if not email_tracking.clicked_at:
+            email_tracking.clicked_at = timezone.now()
+            email_tracking.save()
+            return HttpResponseRedirect(url)
+        else:
+            return HttpResponseRedirect(url)
+    except:
+        return HttpResponse("Email tracking record not fund")
 
-def track_open():
-    return
+def track_open(request, unique_id):
+    try:
+        email_tracking = EmailTracking.objects.get(unique_id=unique_id)
+        # check if the opened_at field is already set or not
+        if not email_tracking.open_at:
+            email_tracking.open_at= timezone.now()
+            email_tracking.save()
+            return HttpResponse("Email opended successfully")
+        else:
+            print("Email is already is opened")
+            return HttpResponse("Email is already is opened")
+
+    except:
+        return HttpResponse('Email tracking record not fund')            
 
 def track_dashboard(request):
     emails = Email.objects.all().annotate(total_sent=Sum('sent__total_sent'))

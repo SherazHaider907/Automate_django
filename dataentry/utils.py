@@ -6,6 +6,7 @@ from django.conf import settings
 from emails.models import Email,Sent,EmailTracking,Subcriber
 import hashlib
 import time
+from bs4 import BeautifulSoup
 def get_all_custom_models():
     """Return all custom models excluding default Django models."""
     default_models = ['LogEntry', 'Permission', 'Group', 'ContentType', 'Session', 'User', 'Upload']
@@ -60,7 +61,7 @@ def send_email_notification(mail_subject,message,to_email ,attachment=None,email
     try:
         from_email = settings.DEFAULT_FROM_EMAIL
         for recipient_email in to_email:
-            # create emailTracking
+            # create emailTracking 
             if email_id:
                 email = Email.objects.get(pk=email_id)
                 subcriber = Subcriber.objects.get(email_list= email.email_list,email_address=recipient_email)
@@ -73,13 +74,29 @@ def send_email_notification(mail_subject,message,to_email ,attachment=None,email
                     unique_id = unique_id
                 )
 
-            # Genrate the tracking pixel
 
+            # Genrate the tracking pixel
+            click_tracking_url = f"http://127.0.0.1:8000/emails/track/click/{unique_id}"
+            open_tracking_url = f"http://127.0.0.1:8000/emails/track/open/{unique_id}"
+            
             # search for the links in email body
+            soup = BeautifulSoup(message,'html.parser')
+            urls = [a['href']for a in soup.find_all('a',href=True)]
 
             # if there are links or url in the email body. injectect our click tracking url to that link
+            if urls:
+                new_message = message
+                for url in urls:
+                    tracking_url = f"{click_tracking_url}?url={urls}"
+                    new_message = new_message.replace(f"{url}",f"{tracking_url}")
+                else:
 
-            mail = EmailMessage(mail_subject,message,from_email,to=to_email  )
+                    print('NO URL FOUND')
+
+                open_tracking_img = f"<img src='{open_tracking_url}' width='1' height='1'> "
+                new_message += open_tracking_img
+
+            mail = EmailMessage(mail_subject,new_message,from_email,to=[recipient_email]  )
 
             if attachment:
                 mail.attach_file(attachment)
