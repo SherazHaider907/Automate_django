@@ -15,5 +15,6 @@ urlpatterns = [
     path('logout/',views.logout , name="logout" ),
     path('emails/',include('emails.urls')),
     path('image_compress/',include('image_compress.urls')),
+    path('webscrapping/',include('stockanalysis.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
