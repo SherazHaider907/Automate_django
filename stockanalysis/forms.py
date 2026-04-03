@@ -1,6 +1,6 @@
 from dal import autocomplete
-from .models import Stock
 from django import forms
+from .models import Stock
 
 class StockForm(forms.Form):
     stock = forms.ModelChoiceField(
@@ -11,5 +11,5 @@ class StockForm(forms.Form):
                 'data-placeholder': 'Search for a stock...',
                 'data-minimum-input-length': 1,
             }
-            )
+        )
     )

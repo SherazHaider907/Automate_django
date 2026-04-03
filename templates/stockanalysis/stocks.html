@@ -1,43 +1,38 @@
 {% extends "base.html" %}
-
-{% block content %}
 {% load crispy_forms_tags %}
 
+{% block content %}
+
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        
-        <div class="col-md-6">
-            
-            <div class="card shadow-lg border-0 rounded-4">
-                
-                <div class="card-body p-4">
-                    
-                    <h2 class="text-center mb-4">Stock Market Analysis</h2>
-                    
-                    <form action="{% url "stocks" %}" method="POST">
-                        {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            {{ form|crispy }}
-                        </div>
+    <div class="col-md-6 mx-auto">
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success">
-                                Get Stock Data
-                            </button>
-                        </div>
+        <div class="card p-4 shadow">
+            <h2 class="text-center mb-4">Stock Market Analysis</h2>
 
-                    </form>
-                    {% include "alerts.html" %}
-                </div>
-                
-            </div>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form|crispy }}
 
+                <button class="btn btn-success w-100 mt-3">
+                    Get Stock Data
+                </button>
+            </form>
         </div>
 
+        {% if stock_data %}
+        <div class="card mt-4 p-3 shadow">
+            <h4>{{ stock_data.stock.name }} ({{ stock_data.stock.symbol }})</h4>
+
+            <p><strong>Price:</strong> {{ stock_data.current_price }}</p>
+            <p><strong>Change:</strong> {{ stock_data.price_change }}</p>
+            <p><strong>% Change:</strong> {{ stock_data.percentage_change }}</p>
+        </div>
+        {% endif %}
+
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    {{ form.media }}
 </div>
 
-{% endblock content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+{{ form.media }}
+
+{% endblock %}
