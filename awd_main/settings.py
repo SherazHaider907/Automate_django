@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "ckeditor",
     "anymail",
     "image_compress",
+    "stockanalysis",
 ]
 
 MIDDLEWARE = [
